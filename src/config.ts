@@ -25,3 +25,15 @@ const EnvSchema = z.object({
 });
 
 export type Config = Readonly<z.infer<typeof EnvSchema>>;
+
+function loadConfig(): Config {
+    const parsed = EnvSchema.safeParse(process.env);
+    if (!parsed.success) {
+        const issues = parsed.error.issues.map((i) => `${i.path.join(",")}: ${i.message}`);
+        throw new Error(`Invalid environment:\n${issues.join("\n")}`);
+    }
+    return Object.freeze(parsed.data);
+}
+
+export const config: Config = loadConfig();
+
