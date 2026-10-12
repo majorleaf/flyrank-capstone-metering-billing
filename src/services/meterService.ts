@@ -4,6 +4,7 @@ import type { Pool, PoolClient } from "pg";
 import type { RecordUsageInput, RecordUsageResult } from "../domain/types.js";
 import { IdempotencyKeyReusedError, TenantNotFoundError } from "../domain/error.js";
 import * as usageRepo from "../repositories/usageRepository.js";
+import { assertWithinQuota } from "./quotaService.js";
 
 function hashRequest(input: RecordUsageInput): string {
   return createHash("sha256")
@@ -32,6 +33,12 @@ export class MeterService {
         await client.query("COMMIT");
         return { ...(prior.responseSnapshot as RecordUsageResult), replayed: true };
       }
+
+      await assertWithinQuota(client, {
+        tenantId: input.tenantId,
+        type: input.type,
+        quantity: input.quantity,
+      });
 
       // Step 5: quota check goes here
       const eventId: string = randomUUID();
