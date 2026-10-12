@@ -99,6 +99,7 @@ export async function sumUsage(
     client: PoolClient,
     tenantId: string,
     type: UsageType,
+    start: Date,
     end: Date,
 ): Promise<number> {
     const { rows } = await client.query<{ used: string }>(

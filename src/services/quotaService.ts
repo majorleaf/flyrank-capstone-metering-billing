@@ -8,7 +8,7 @@ import {
 import { utcMonthBounds } from "../domain/period.js";
 import * as usageRepo from "../repositories/usageRepository.js";
 
-export async function asserWithinQuota(
+export async function assertWithinQuota(
     client: PoolClient,
     req: { tenantId: string; type: UsageType; quantity: number },
     now: Date = new Date(),
