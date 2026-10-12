@@ -1,4 +1,5 @@
-import { createHash } from "node:crypto";
+// src/services/meterService.ts
+import { createHash, randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { RecordUsageInput, RecordUsageResult } from "../domain/types.js";
 import { IdempotencyKeyReusedError, TenantNotFoundError } from "../domain/error.js";
@@ -32,24 +33,28 @@ export class MeterService {
         return { ...(prior.responseSnapshot as RecordUsageResult), replayed: true };
       }
 
-      // inserts the quota check here
-      const result: Omit<RecordUsageResult, "eventId"> = {
+      // Step 5: quota check goes here
+      const eventId: string = randomUUID();
+      const result: RecordUsageResult = {
+        eventId,
         type: input.type,
         quantity: input.quantity,
         replayed: false,
       };
-      const eventId = await usageRepo.insertEvent(client, {
+
+      await usageRepo.insertEvent(client, {
+        id: eventId,
         tenantId: input.tenantId,
         type: input.type,
         quantity: input.quantity,
-        costMicros: 0n, // computes real cost
+        costMicros: 0n, // Step 6 computes real cost
         idempotencyKey: input.idempotencyKey,
         requestHash,
-        responseSnapshot: { ...result, eventId: "pending" },
+        responseSnapshot: result,
       });
 
       await client.query("COMMIT");
-      return { ...result, eventId };
+      return result;
     } catch (err: unknown) {
       await client.query("ROLLBACK");
       throw err;

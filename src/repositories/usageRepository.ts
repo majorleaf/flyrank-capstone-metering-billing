@@ -37,7 +37,8 @@ export async function findByKey(
 
 export async function insertEvent(
     client: PoolClient,
-    e: {        
+    e: {  
+        id: string;      
         tenantId: string;
         type: UsageType;
         quantity: number;
@@ -46,12 +47,11 @@ export async function insertEvent(
         requestHash: string;
         responseSnapshot: unknown;
     },
-): Promise<string> {
-    const { rows } = await client.query<{ id: string }>(
+): Promise<void> {
+    await client.query(
         `INSERT INTO usage_events
            (tenant_id, type, quantity, cost_micros, idempotency_key, request_hash, response_snapshot)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING id`,
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
             e.tenantId,
             e.type,
@@ -62,7 +62,4 @@ export async function insertEvent(
             JSON.stringify(e.responseSnapshot),
         ],
     );
-    const row = rows[0];
-    if (!row) throw new Error("Failed to insert no row");
-    return row.id;
 }   
