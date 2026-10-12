@@ -7,7 +7,7 @@ export function isUsageType(value: unknown): value is UsageType {
 
 export interface RecordUsageInput {
     readonly tenantId: string;
-    readonly type: string;
+    readonly type: UsageType;
     readonly quantity: number;
     readonly idempotencyKey: string;
 }

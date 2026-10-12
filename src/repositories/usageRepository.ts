@@ -48,18 +48,17 @@ export async function insertEvent(
         responseSnapshot: unknown;
     },
 ): Promise<void> {
-    await client.query(
-        `INSERT INTO usage_events
-           (tenant_id, type, quantity, cost_micros, idempotency_key, request_hash, response_snapshot)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
-            e.tenantId,
-            e.type,
-            e.quantity,
-            e.costMicros.toString(),
-            e.idempotencyKey,
-            e.requestHash,
-            JSON.stringify(e.responseSnapshot),
-        ],
+   await client.query(
+  "INSERT INTO usage_events (id, tenant_id, type, quantity, cost_micros, idempotency_key, request_hash, response_snapshot) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+  [
+    e.id,
+    e.tenantId,
+    e.type,
+    e.quantity,
+    e.costMicros.toString(),
+    e.idempotencyKey,
+    e.requestHash,
+    JSON.stringify(e.responseSnapshot),
+  ],
     );
 }   
