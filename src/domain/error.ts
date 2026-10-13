@@ -37,3 +37,10 @@ export class PaymentRequiredError extends Error {
     this.name = "PaymentRequiredError";
   }
 }
+
+export class InvalidTokenUsageError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidTokenUsageError";
+  }
+}
