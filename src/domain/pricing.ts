@@ -48,9 +48,9 @@ export function computeTokenCostMicros(
 ): bigint {
     validateTokenUsage(usage);
 
-    const fresh = Bigint(usage.inputTokens - usage.cachedInputTokens);
-    const cached = Bigint(usage.cachedInputTokens);
-    const billableOutput = Bigint(usage.outputTokens) + bigint(usage.reasoningTokens);
+    const fresh = BigInt(usage.inputTokens - usage.cachedInputTokens);
+    const cached = BigInt(usage.cachedInputTokens);
+    const billableOutput = BigInt(usage.outputTokens) + BigInt(usage.reasoningTokens);
 
     const numerator = 
       fresh * pricing.freshInputMicrosPerMillion +
