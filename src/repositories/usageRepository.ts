@@ -2,6 +2,7 @@ import type { PoolClient } from "pg";
 import type { UsageType } from "../domain/types.js";
 import type { TenantNotFoundError } from "../domain/error.js";
 import { start } from "repl";
+import type { TokenUsage } from "../domain/pricing.js"
 
 export interface StoredEvent {
     readonly id: string;
@@ -44,6 +45,7 @@ export async function insertEvent(
         tenantId: string;
         type: UsageType;
         quantity: number;
+        tokenBreakdown: TokenUsage | null;
         costMicros: bigint;
         idempotencyKey: string;
         requestHash: string;
@@ -51,12 +53,13 @@ export async function insertEvent(
     },
 ): Promise<void> {
    await client.query(
-  "INSERT INTO usage_events (id, tenant_id, type, quantity, cost_micros, idempotency_key, request_hash, response_snapshot) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+  "INSERT INTO usage_events (id, tenant_id, type, quantity, token_breakdown, cost_micros, idempotency_key, request_hash, response_snapshot) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
   [
     e.id,
     e.tenantId,
     e.type,
     e.quantity,
+    e.tokenBreakdown ? JSON.stringify(e.tokenBreakdown) : null,
     e.costMicros.toString(),
     e.idempotencyKey,
     e.requestHash,

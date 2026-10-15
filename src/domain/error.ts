@@ -44,3 +44,10 @@ export class InvalidTokenUsageError extends Error {
     this.name = "InvalidTokenUsageError";
   }
 }
+
+export class InvalidQuantityError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidQuantityError";
+  }
+}

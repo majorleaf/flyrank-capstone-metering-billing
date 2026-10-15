@@ -23,6 +23,7 @@ export const PRICING_V1: TokenPricing = Object.freeze({
     outputMicrosPerMillion: 4_000_000n,
 });
 
+export const API_CALL_PRICE_MICROS = 1_000n; // $0.001 per call
 const MILLION = 1_000_000n;
 
 function assertCount(name: string, n: number): void {
