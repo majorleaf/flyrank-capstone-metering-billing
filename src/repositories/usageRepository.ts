@@ -114,3 +114,31 @@ export async function sumUsage(
     );
     return Number(rows[0]?.used ?? "0");
 }
+
+export interface UsageTotals {
+    readonly used: number;
+    readonly costMicros: bigint;
+}
+
+export async function sumUsageByType(
+    client: PoolClient,
+    tenantId: string,
+    start: Date,
+    end: Date,
+): Promise<Record<UsageType, UsageTotals>> {
+    const { rows } = await client.query<{ type: UsageType; used: string; cost_micros: string }>(
+       `SELECT type, SUM(quantity)::text AS used, SUM(cost_micros)::text AS cost_micros
+        FROM usage_events
+        WHERE tenant_id = $1 AND occurred_at >= $2 AND occurred_at < $3
+        GROUP BY type`,
+        [tenantId, start, end], 
+    );
+    const totals: Record<UsageType, UsageTotals> = {
+        api_call: { used: 0, costMicros: 0n },
+        ai_tokens: { used: 0, costMicros: 0n },
+    };
+    for (const r of rows) {
+        totals[r.type] = { used: Number(r.used), costMicros: BigInt(r.cost_micros)};
+    }
+    return totals;
+}
