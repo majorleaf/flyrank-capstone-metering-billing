@@ -35,7 +35,7 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, next)
         return send(402, { error: "payment_required", message: err.message });
     }
     if (err instanceof IdempotencyKeyReusedError) {
-        return send(422, { error:"idemptency_key_reused", message: err.message});
+        return send(422, { error:"idempotency_key_reused", message: err.message});
     }
     if (err instanceof TenantNotFoundError) {
         return send(404, { error: "tenant_not_found", message: err.message});

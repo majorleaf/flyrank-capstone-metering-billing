@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const TenantHeaderShema = z.string().uuid();
+export const TenantHeaderSchema = z.string().uuid();
 export const IdempotencyKeySchema = z.string().min(8).max(128).regex(/^[A-Za-z0-9_\-:.]+$/);
 
 const TokenCount = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
