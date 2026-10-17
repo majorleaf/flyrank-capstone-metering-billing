@@ -1,54 +1,69 @@
-## Metering: exactly one usage event per idempotency key
+# EVIDENCE.md
 
-Command: `npx tsx src/scratch/meterTry.ts cd550aad-7822-4c29-91d3-f91efaa10ec6` (same request, key `demo-1`, sent twice)
+Status legend: ✅ proven with real output · ⏳ pending
 
-Output: {
-  eventId: 'c088b686-6d96-47ee-ac6c-8bcb42358c4b',
-  type: 'api_call',
-  quantity: 1,
-  replayed: false
-}
-{
-  type: 'api_call',
-  eventId: 'c088b686-6d96-47ee-ac6c-8bcb42358c4b',
-  quantity: 1,
-  replayed: true
-}
+## 1. Metering: exactly one usage event per idempotency key (Probe 1)  ✅
 
-Row count: RES_DB" -c "SELECT idempotency_key, count(*) FROM usage_events GROUP BY 1"'
- idempotency_key | count 
+### 1a. Service level
+
+Command: `npx tsx src/scratch/meterTry.ts <tenant-uuid>` (same request, key `demo-1`, sent twice)
+
+```
+{ eventId: 'c088b686-6d96-47ee-ac6c-8bcb42358c4b', type: 'api_call', quantity: 1, replayed: false }
+{ type: 'api_call', eventId: 'c088b686-6d96-47ee-ac6c-8bcb42358c4b', quantity: 1, replayed: true }
+```
+
+Row count:
+
+```
+ idempotency_key | count
 -----------------+-------
  demo-1          |     1
 (1 row)
+```
 
-PROBE 2: 
-   Probe 2’s service-level behavior is proven:
- --Calls 1-3 succeed, and call 3 lands exactly on the limit (3 of 3), which is allowed.
-  --Call 4 is rejected with a clear message (used 3 of 3, requested 1).
-  --The replay of call 3 returns the original eventId with replayed: true, not a 429.
+### 1b. Over HTTP
 
-call 1 {
-  eventId: '5060155c-3140-4312-a741-509470b49469',
-  type: 'api_call',
-  quantity: 1,
-  replayed: false
-}
-call 2 {
-  eventId: '889cbade-8a53-456b-9d02-36fd030fd05b',
-  type: 'api_call',
-  quantity: 1,
-  replayed: false
-}
-call 3 (boundary) {
-  eventId: '77647fc6-a6c1-4b29-920c-becae62dcb5d',
-  type: 'api_call',
-  quantity: 1,
-  replayed: false
-}
+Same `Idempotency-Key: http-test-0001`, same body, sent twice (headers trimmed):
+
+```
+POST /generate  -> 200 {"eventId":"3dec2bf8-b154-48cd-8133-da3c87883d84","type":"api_call","quantity":1,"costMicros":"1000","replayed":false}
+POST /generate  -> 200 {"type":"api_call","eventId":"3dec2bf8-b154-48cd-8133-da3c87883d84","quantity":1,"replayed":true,"costMicros":"1000"}
+```
+
+Same key, different body (`quantity: 5`) is rejected as key reuse:
+
+```
+POST /generate  -> 422  <PENDING: re-run after the "idempotency_key_reused" spelling fix, paste real output>
+```
+
+Missing headers give a clean 4xx, not a 500:
+
+```
+POST /generate (no X-Tenant-Id)  -> 400
+{"error":"invalid_request","message":"Invalid request","details":[{"expected":"string","code":"invalid_type","path":[],"message":"Invalid input: expected string, received undefined"}]}
+```
+
+## 2. Quotas (Probe 2)
+
+Boundary rule: a request is allowed while `used + requested <= limit`. The request that would exceed the limit gets 429. 402 is reserved for `past_due` / `canceled` tenants.
+
+### 2a. Service level, limit temporarily 3  ✅
+
+```
+call 1 { eventId: '5060155c-3140-4312-a741-509470b49469', type: 'api_call', quantity: 1, replayed: false }
+call 2 { eventId: '889cbade-8a53-456b-9d02-36fd030fd05b', type: 'api_call', quantity: 1, replayed: false }
+call 3 (boundary) { eventId: '77647fc6-a6c1-4b29-920c-becae62dcb5d', type: 'api_call', quantity: 1, replayed: false }
 call 4 REJECTED: Monthly api_call quota exceeded: used 3 of 3, requested 1. Upgrade your plan or wait for the next period.
-replay of call 3 {
-  type: 'api_call',
-  eventId: '77647fc6-a6c1-4b29-920c-becae62dcb5d',
-  quantity: 1,
-  replayed: true
-}
+replay of call 3 { type: 'api_call', eventId: '77647fc6-a6c1-4b29-920c-becae62dcb5d', quantity: 1, replayed: true }
+```
+
+A replay at the boundary returns the original success, not a 429.
+
+### 2b. Over HTTP, limit temporarily 2 (tenant already had 1 call)
+
+Boundary call (used 2 of 2, allowed):
+
+```
+HTTP/1.1 200 OK
+{"eventId":"b247a4a1-0ec3-40c4-a869-4161671a3f5a","
