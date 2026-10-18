@@ -51,3 +51,17 @@ export class InvalidQuantityError extends Error {
     this.name = "InvalidQuantityError";
   }
 }
+
+export class AlreadySubscribedError extends Error  {
+  constructor(public readonly planId: string ) {
+    super(`Tenant is already on the ${planId} plan`);
+    this.name = "AlreadySubcribedError";
+  }
+}
+
+export class CheckoutSessionError extends Error {
+  constructor() {
+    super("Stripe returned a checkout session without a URL ");
+    this.name = "CheckoutSessionError";
+  }
+}
