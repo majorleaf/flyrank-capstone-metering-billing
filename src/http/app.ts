@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import type { Router } from "express";
 import type { MeterService } from "../services/meterService.js";
 import type { UsageService } from "../services/usageService.js";
 import type { BillingService } from "../services/billingService.js";
@@ -12,11 +13,13 @@ export interface AppDeps {
     readonly meter: MeterService;
     readonly usage: UsageService;
     readonly  billing: BillingService;
+    readonly webhookRouter: Router;
 }
 
 export function createApp(deps: AppDeps): Express {
     const app = express();
     app.disable("x-powered-by");
+    app.use(deps.webhookRouter);
     app.use(express.json({ limit: "100kb" }));
     app.get("/health", (_req, res) => {
         res.json({ status: "ok" });
