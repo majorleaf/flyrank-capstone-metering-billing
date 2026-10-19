@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from "express";
 import { z } from "zod";
+import Stripe from "stripe";
 import { 
     IdempotencyKeyReusedError,
     InvalidQuantityError,
@@ -7,6 +8,8 @@ import {
     PaymentRequiredError,
     QuotaExceededError,
     TenantNotFoundError,
+    AlreadySubscribedError,
+    CheckoutSessionError
 } from "../../domain/error.js"
 
 interface ErrorBody {
@@ -43,10 +46,20 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, next)
     if (err instanceof InvalidQuantityError) {
         return send(400, { error: "invalid_usage", message: err.message});
     }
+    if (err instanceof AlreadySubscribedError) {
+        return send(409, { error: "already_subscribed", message: err.message });
+    }
+    if (err instanceof Stripe.errors.StripeError || err instanceof CheckoutSessionError) {
+        console.error("stripe error", { name: err.name });
+        return send(502, { error: "billing_provider_error", message: "Billing provider unavailable" });
+    }
     if (err instanceof SyntaxError) {
         return send(400, { error: "invalid_json", message: err.message });
     }
     
-    console.error("unhandled error", { name: err instanceof Error ? err.name : typeof err});
+    console.error("unhandled error", { 
+        name: err instanceof Error ? err.name : typeof err,
+        message: err instanceof Error ? err.message : String(err),
+    });
     send(500, { error: "internal_error", message: "Internal server error "})
 }
