@@ -67,3 +67,28 @@ Boundary call (used 2 of 2, allowed):
 ```
 HTTP/1.1 200 OK
 {"eventId":"b247a4a1-0ec3-40c4-a869-4161671a3f5a","
+
+### 4c. Forged signature returns 400, nothing changes (Probe 4)  ✅
+
+```
+$ curl -s -i -X POST localhost:8000/webhooks/stripe -H "Stripe-Signature: t=1,v1=bad" -H "Content-Type: application/json" -d '{}'
+HTTP/1.1 400 Bad Request
+{"error":"invalid_signature","message":"Signature verification failed"}
+```
+
+Tenant row before and after: `free | active` (unchanged).
+
+### 4d. Replayed event processed once (Probe 4)  ✅
+
+Same event delivered twice via `stripe events resend evt_1URmXDFUUPa66TPpMcY0C0rj`:
+
+2026-10-23 22:57:42  <--  [200] POST /webhooks/stripe [evt_1URmXDFUUPa66TPpMcY0C0rj]
+2026-10-23 22:59:59  <--  [200] POST /webhooks/stripe [evt_1URmXDFUUPa66TPpMcY0C0rj]
+
+stripe_events table after both deliveries:
+           event_id           |            type
+------------------------------+----------------------------
+ evt_1URmXDFUUPa66TPpMcY0C0rj | checkout.session.completed
+(1 row)
+
+tenants: pro | active | cus_VShxMmQzHP8HYh
