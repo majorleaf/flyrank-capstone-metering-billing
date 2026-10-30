@@ -24,9 +24,9 @@ export function webhookRoutes(stripe: Stripe, service: WebhookService, secret: s
       }
 
       try {
-        const outcome = await service.handle(event);
+       const outcome = await service.handle(event);
        console.info("webhook handled", { eventId: event.id, type: event.type, outcome });
-        res.status(200).json({ received: true, outcome });
+       res.status(200).json({ received: true, outcome });
       } catch (err: unknown) {
         next(err); // 500 makes Stripe retry
       }
