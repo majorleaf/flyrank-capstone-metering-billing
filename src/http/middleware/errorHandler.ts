@@ -32,7 +32,7 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, next)
     }
     if (err instanceof QuotaExceededError) {
         res.setHeader("Retry-After", String(err.details.retryAfterSeconds ));
-        return send(429, { error: "quota_exceeeded", message: err.message, details: err.details });
+        return send(429, { error: "quota_exceeded", message: err.message, details: err.details });
     }
     if (err instanceof PaymentRequiredError ) {
         return send(402, { error: "payment_required", message: err.message });

@@ -92,3 +92,19 @@ stripe_events table after both deliveries:
 (1 row)
 
 tenants: pro | active | cus_VShxMmQzHP8HYh
+
+### Automated proof (replaces the PENDING 422 and 429 slots)
+
+$ npm test
+ ✓ src/domain/pricing.test.ts (7 tests)
+ ✓ src/services/meterService.test.ts (8 tests)
+ ✓ src/http/app.test.ts (6 tests)
+ Test Files  3 passed (3)
+      Tests  21 passed (21)
+
+Covered: replay mirrors the response, key reuse with a different body returns 422
+(idempotency_key_reused), concurrent retries create one event, boundary call allowed
+and next call rejected, a replay at the boundary returns the original success, two
+concurrent requests at 2 of 3 admit exactly one, past_due returns 402, over the limit
+returns 429 with Retry-After, missing headers return 400, unknown tenant returns 404,
+and the ai_tokens cost is 19000 micros.
