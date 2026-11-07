@@ -48,7 +48,15 @@ next call     -> HTTP/1.1 429 Too Many Requests, Retry-After: 1267351
 
 Automated: `allows the call that lands on the limit, rejects the next`, `a replay at the boundary returns the original success`, `two concurrent requests at 2 of 3 admit exactly one`, `a past_due tenant gets a payment-required error`, `over the limit returns 429 with Retry-After and a message`, `past_due returns 402`.
 
-Mutation check (row lock guards the race): <PASTE the failing test line after removing `FOR UPDATE`; note it was restored>
+Mutation check (row lock guards the race): 
+Removed `FOR UPDATE` from `lockTenant`, ran `npm test`:
+ × concurrent retries of one key create one event
+     error: duplicate key value violates unique constraint "usage_events_idem_uq"
+ × two concurrent requests at 2 of 3 admit exactly one
+     expected [ ... ] to have a length of 1 but got 2
+ Tests 2 failed | 19 passed (21)
+Restored `FOR UPDATE`:
+ Test Files 3 passed (3)   Tests 21 passed (21)
 
 ## 3. Cost calculation (Probe 5) 
 
@@ -111,7 +119,7 @@ $ npm test
       Tests  21 passed (21)
 ```
 
-## 6. Shared requirements ⏳
+## 6. Shared requirements 
 
 | # | Requirement | Proof |
 |---|---|---|
