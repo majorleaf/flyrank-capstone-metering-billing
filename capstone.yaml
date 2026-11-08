@@ -1,0 +1,10 @@
+run: docker compose up -d && npm run migrate && npm run seed && npm start
+seed: npm run seed
+test: npm test
+base_url: http://localhost:8000
+endpoints:
+  - GET /health
+  - GET /usage
+  - POST /generate
+  - POST /billing/checkout
+  - POST /webhooks/stripe
