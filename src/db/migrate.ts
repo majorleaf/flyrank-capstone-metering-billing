@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import type { PoolClient } from "pg";
 import { pool } from "./pool.js";
 
-const MIGRATIONS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "migrations");
+const MIGRATIONS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../migrations");
 const FILE_PATTERN = /^\d{3}_[a-z0-9_]+\.sql$/;
 const ADVISORY_LOCK_KEY = 727001;
 const BASELINE_FILE = "001_init.sql";
