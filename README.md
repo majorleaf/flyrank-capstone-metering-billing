@@ -210,10 +210,4 @@ migrations/              SQL schema
 - **No background reconciliation job yet** (see Roadmap).
 - **Single currency (USD)** and a single price version (`PRICING_V1`).
 
-## Roadmap
 
-Nightly reconciliation job comparing the database with Stripe's view, with retries and a failure alert. Overage billing. Usage alerts at 80% and 100%.
-
-## Security
-
-Secrets live only in `.env`, which is git-ignored. `.env.example` holds placeholders. `config.ts` refuses any Stripe key that does not start with `sk_test_`. Logs record ids, event types and outcomes, never keys, signatures or customer data.
