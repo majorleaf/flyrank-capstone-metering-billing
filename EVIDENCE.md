@@ -132,6 +132,11 @@ $ npm test
 | 7 | AI cost tracked | Tokens are simulated; cost stored per event in `cost_micros` |
 
 ## 7. Submission pack ⏳
+Fresh-clone proof (docker compose down -v, up -d, pg_isready loop):
+$ npm run migrate  -> applied 001_init.sql
+$ npm run seed     -> seeded: pro plan linked to price_1URVPh...; demo tenant: 00000000-0000-4000-8000-000000000001
+$ GET /usage       -> {"status":"active", ... "apiCalls":{"used":0,"limit":1000,...}}
+
 - README, diagram, limitations: PENDING
 - `capstone.yaml`: PENDING
 - `npm run migrate` and `npm run seed`: PENDING
